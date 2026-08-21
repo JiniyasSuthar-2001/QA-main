@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareSync Pro - Therapy & Healthcare Management System</title>
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app" class="app-container">
+    <!-- Sidebar Navigation (Ref: Issue 21 - Removed duplicate Attendance List) -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+        <div class="brand-text">
+          <h2>CareSync Pro</h2>
+          <span>Therapy & Clinic Suite</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">MAIN MENU</div>
+        <a href="#" class="nav-item active" data-view="home">
+          <i class="fa-solid fa-house-chimney nav-icon"></i>
+          <span>Home Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-view="leads">
+          <i class="fa-solid fa-user-plus nav-icon"></i>
+          <span>Lead Management</span>
+        </a>
+        <a href="#" class="nav-item" data-view="followups">
+          <i class="fa-solid fa-calendar-check nav-icon"></i>
+          <span>Follow-up Management</span>
+        </a>
+        <a href="#" class="nav-item" data-view="children">
+          <i class="fa-solid fa-child-reaching nav-icon"></i>
+          <span>Children / Patients</span>
+        </a>
+
+        <div class="nav-section-title">ATTENDANCE</div>
+        <a href="#" class="nav-item" data-view="children-attendance">
+          <i class="fa-solid fa-clipboard-user nav-icon"></i>
+          <span>Children Attendance</span>
+        </a>
+        <a href="#" class="nav-item" data-view="employee-attendance">
+          <i class="fa-solid fa-user-clock nav-icon"></i>
+          <span>Employee Attendance</span>
+        </a>
+
+        <div class="nav-section-title">ORGANIZATION</div>
+        <a href="#" class="nav-item" data-view="department">
+          <i class="fa-solid fa-building nav-icon"></i>
+          <span>Department</span>
+        </a>
+        <a href="#" class="nav-item" data-view="designation">
+          <i class="fa-solid fa-id-badge nav-icon"></i>
+          <span>Designation</span>
+        </a>
+        <a href="#" class="nav-item" data-view="leave-requests">
+          <i class="fa-solid fa-calendar-minus nav-icon"></i>
+          <span>Leave Requests</span>
+        </a>
+        <a href="#" class="nav-item" data-view="leave-approval">
+          <i class="fa-solid fa-file-circle-check nav-icon"></i>
+          <span>Leave Approvals</span>
+        </a>
+        <a href="#" class="nav-item" data-view="employees">
+          <i class="fa-solid fa-users nav-icon"></i>
+          <span>Employee Management</span>
+        </a>
+
+        <div class="nav-section-title">FINANCE & CONTACTS</div>
+        <a href="#" class="nav-item" data-view="contacts">
+          <i class="fa-solid fa-address-book nav-icon"></i>
+          <span>Contacts</span>
+        </a>
+        <a href="#" class="nav-item" data-view="expenses">
+          <i class="fa-solid fa-receipt nav-icon"></i>
+          <span>Expense Management</span>
+        </a>
+        <a href="#" class="nav-item" data-view="invoices">
+          <i class="fa-solid fa-file-invoice-dollar nav-icon"></i>
+          <span>Invoice Management</span>
+        </a>
+        <a href="#" class="nav-item" data-view="payment-reminders">
+          <i class="fa-solid fa-bell nav-icon"></i>
+          <span>Payment Reminders</span>
+        </a>
+
+        <div class="nav-section-title">ADMINISTRATION</div>
+        <a href="#" class="nav-item" data-view="users">
+          <i class="fa-solid fa-user-gear nav-icon"></i>
+          <span>User Management</span>
+        </a>
+        <a href="#" class="nav-item" data-view="roles">
+          <i class="fa-solid fa-shield-halved nav-icon"></i>
+          <span>User Roles</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-user">
+        <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=120&q=80" alt="Dr. Sarah Jenkins" class="user-avatar">
+        <div class="user-info">
+          <span class="user-name">Dr. Sarah Jenkins</span>
+          <span class="user-role">Clinic Administrator</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Standardized Global Header (Ref: Issue 16) -->
+      <header class="app-header" id="appHeader">
+        <div class="header-left">
+          <button id="toggleSidebar" class="icon-btn mobile-only"><i class="fa-solid fa-bars"></i></button>
+          <div class="header-title-group">
+            <h1 id="headerTitle">Home Dashboard</h1>
+            <p id="headerSubtitle">Overview of clinic operations, face scan attendance, and today's schedule</p>
+          </div>
+        </div>
+        <div class="header-actions" id="headerActions">
+          <!-- Dynamic Action Buttons injected per view -->
+        </div>
+      </header>
+
+      <!-- View Container -->
+      <div class="content-body" id="contentBody">
+        <!-- Views are rendered dynamically by app.js -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Global Modal Container -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal-card" id="modalCard">
+      <div class="modal-header" id="modalHeader">
+        <h3 id="modalTitle">Modal Title</h3>
+        <button class="modal-close" id="modalCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Dynamic Content -->
+      </div>
+      <div class="modal-footer" id="modalFooter">
+        <!-- Dynamic Footer Actions -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

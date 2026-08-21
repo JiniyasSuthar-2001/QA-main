@@ -1,0 +1,5 @@
+node_modules/
+uploads/*.apk
+!uploads/.gitkeep
+.env
+*.log

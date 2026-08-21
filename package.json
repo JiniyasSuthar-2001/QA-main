@@ -1,0 +1,21 @@
+{
+  "name": "apk-qa-platform",
+  "version": "1.0.0",
+  "description": "Production-Quality APK QA Platform with Backend API, Encrypted Credentials, Background Jobs, Analyzer Engine, and Real-Time Dashboard",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "node server/index.js",
+    "start": "node server/index.js",
+    "start:all": "node server/index.js",
+    "health": "node -e \"fetch('http://localhost:8080/api/health').then(r=>r.json()).then(console.log)\""
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.10",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "uuid": "^9.0.1"
+  }
+}
