@@ -107,9 +107,9 @@ async function renderDashboardView(container) {
           <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(99, 102, 241, 0.1); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; font-size: 36px; margin-bottom: 24px;">
             <i class="fa-solid fa-cloud-arrow-up"></i>
           </div>
-          <h2 style="font-size: 26px; font-weight: 700; margin-bottom: 12px;">No Applications Tested Yet</h2>
+          <h2 style="font-size: 26px; font-weight: 700; margin-bottom: 12px;">No applications yet</h2>
           <p style="color: var(--text-muted); font-size: 15px; max-width: 540px; margin: 0 auto 28px; line-height: 1.6;">
-            Upload your Android APK file, configure optional test credentials, and run automated static, dynamic, security, and performance analysis.
+            Upload your first APK to begin QA testing.
           </p>
           <button class="btn btn-primary" onclick="switchView('wizard')" style="font-size: 16px; padding: 14px 32px; font-weight: 700; box-shadow: 0 0 24px var(--primary-glow);">
             <i class="fa-solid fa-plus"></i> New QA Test
