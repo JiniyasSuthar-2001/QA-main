@@ -15,130 +15,20 @@ const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 if (!fs.existsSync(PUBLIC_DIR)) fs.mkdirSync(PUBLIC_DIR, { recursive: true });
 
-function seedDatabase() {
+// Production Database Schema Initialization (Zero Fake / Seed Data)
+function initCleanDatabase() {
   let user = db.findOne('users', u => u.email === 'qa.admin@caresync.com');
   if (!user) {
-    user = db.insert('users', {
+    db.insert('users', {
       name: 'QA Lead Admin',
       email: 'qa.admin@caresync.com',
       password_hash: crypto.createHash('sha256').update('admin123').digest('hex'),
       role: 'ADMIN'
     });
   }
-
-  let project = db.findOne('projects', p => p.name === 'CareSync Mobile');
-  if (!project) {
-    project = db.insert('projects', {
-      name: 'CareSync Mobile',
-      description: 'Pediatric therapy & clinic management Android application',
-      owner_id: user.id
-    });
-
-    const mockApkPath = path.join(UPLOAD_DIR, 'CareSync_v1.0.apk');
-    if (!fs.existsSync(mockApkPath)) {
-      fs.writeFileSync(mockApkPath, 'PK\x03\x04MockAPKBinaryHeaderDataForCareSyncv1.0PK\x05\x06');
-    }
-
-    db.insert('apks', {
-      project_id: project.id,
-      file_name: 'CareSync_v1.0.apk',
-      file_path: mockApkPath,
-      file_size: 24500000,
-      sha256: crypto.createHash('sha256').update('CareSync_v1.0').digest('hex'),
-      package_name: 'com.caresync.mobile',
-      version_name: '1.0.0',
-      version_code: 100,
-      min_sdk: 24,
-      target_sdk: 33,
-      architecture: 'arm64-v8a',
-      status: 'PROCESSED',
-      uploaded_by: user.id
-    });
-
-    const mockApkPath2 = path.join(UPLOAD_DIR, 'CareSync_v1.4.apk');
-    if (!fs.existsSync(mockApkPath2)) {
-      fs.writeFileSync(mockApkPath2, 'PK\x03\x04MockAPKBinaryHeaderDataForCareSyncv1.4PK\x05\x06');
-    }
-
-    const apk2 = db.insert('apks', {
-      project_id: project.id,
-      file_name: 'CareSync_v1.4.apk',
-      file_path: mockApkPath2,
-      file_size: 26800000,
-      sha256: crypto.createHash('sha256').update('CareSync_v1.4').digest('hex'),
-      package_name: 'com.caresync.mobile',
-      version_name: '1.4.2',
-      version_code: 142,
-      min_sdk: 24,
-      target_sdk: 34,
-      architecture: 'universal',
-      status: 'PROCESSED',
-      uploaded_by: user.id
-    });
-
-    const testRun = db.insert('test_runs', {
-      project_id: project.id,
-      apk_id: apk2.id,
-      status: 'COMPLETED',
-      started_at: new Date(Date.now() - 3600000).toISOString(),
-      completed_at: new Date().toISOString(),
-      progress: 100,
-      environment: 'Pixel 8 - Android 15 (API 35)',
-      created_by: user.id
-    });
-
-    const f1 = db.insert('findings', {
-      test_run_id: testRun.id,
-      title: 'Authentication API HTTP 500 Internal Error during Session Verification',
-      description: 'During dynamic test execution of Authentication & Session Persistence, POST /api/v1/auth/login returned HTTP 500 status code upon 3rd login attempt.',
-      category: 'FUNCTIONAL',
-      severity: 'HIGH',
-      confidence: 'CONFIRMED',
-      status: 'OPEN',
-      impact: 'Users cannot log in reliably, causing authentication failure and preventing access to main application features.',
-      expected_behavior: 'Authentication endpoint should handle repeated login attempts gracefully and return valid JWT or HTTP 401 on bad credentials.',
-      actual_behavior: 'Server returned HTTP 500 Internal Server Error with empty body.',
-      reproduction_steps: '1. Launch APK on Pixel 8 Android 15\n2. Navigate to Login screen\n3. Tap Sign In 3 times rapidly with valid credentials',
-      technical_details: JSON.stringify({ endpoint: 'POST /api/v1/auth/login', status_code: 500, response_time_ms: 412 })
-    });
-
-    const f2 = db.insert('findings', {
-      test_run_id: testRun.id,
-      title: 'NullPointerException Crash on Rapid Screen Rotation',
-      description: 'App crashes with NullPointerException in FragmentStateAdapter when user rapidly rotates device orientation between Portrait and Landscape.',
-      category: 'CRASH',
-      severity: 'CRITICAL',
-      confidence: 'CONFIRMED',
-      status: 'OPEN',
-      impact: 'Application forcibly terminates with crash popup, resulting in unsaved user state loss.',
-      expected_behavior: 'Activity should save fragment state in onSaveInstanceState and recreate smoothly.',
-      actual_behavior: 'Fatal Exception: java.lang.NullPointerException: Attempt to invoke virtual method on a null object reference at com.qa.app.ui.DashboardFragment.onViewCreated(DashboardFragment.java:142)',
-      reproduction_steps: '1. Open Dashboard screen\n2. Trigger rotation shortcut 5 times rapidly\n3. Observe Logcat stack trace and crash popup',
-      technical_details: JSON.stringify({ exception: 'java.lang.NullPointerException', class: 'com.qa.app.ui.DashboardFragment', line: 142 })
-    });
-
-    db.insert('evidence', {
-      finding_id: f2.id,
-      test_run_id: testRun.id,
-      type: 'STACK_TRACE',
-      file_path: '/evidence/crash_logcat.txt',
-      content_json: JSON.stringify({
-        exception: 'java.lang.NullPointerException',
-        stack_trace: `Fatal Exception: java.lang.NullPointerException: Attempt to invoke virtual method 'android.view.View android.view.View.findViewById(int)' on a null object reference\n\tat com.caresync.mobile.ui.DashboardFragment.onViewCreated(DashboardFragment.java:142)`
-      })
-    });
-
-    db.insert('reports', {
-      project_id: project.id,
-      apk_id: apk2.id,
-      test_run_id: testRun.id,
-      qa_score: 82,
-      summary_json: JSON.stringify({ total_findings: 2, critical: 1, high: 1, qaScore: 82, package_name: 'com.caresync.mobile' })
-    });
-  }
 }
 
-seedDatabase();
+initCleanDatabase();
 
 const server = http.createServer((req, res) => {
   const parsedUrl = url.parse(req.url, true);
@@ -169,7 +59,7 @@ const server = http.createServer((req, res) => {
     return res.end();
   }
 
-  // --- Requirement #11: Backend Health Check Endpoint ---
+  // Health Check Endpoint
   if (method === 'GET' && pathname === '/api/health') {
     return res.sendJson(200, {
       status: 'healthy',
@@ -295,7 +185,23 @@ const server = http.createServer((req, res) => {
     return res.sendJson(200, db.find('projects'));
   }
 
-  // TEST CREDENTIALS SECURITY API (Requirements #3, #5, #13)
+  if (method === 'POST' && pathname === '/api/projects') {
+    readJsonBody((err, body) => {
+      const { name, description } = body;
+      if (!name) return res.sendJson(400, null, 'Project name is required');
+      const user = db.findOne('users', u => true);
+      const project = db.insert('projects', {
+        name,
+        description: description || '',
+        owner_id: user ? user.id : 'USR-ADMIN'
+      });
+      db.logAudit(user ? user.id : 'USR-ADMIN', 'CREATE_PROJECT', { projectId: project.id, name });
+      res.sendJson(201, project, 'Project created successfully');
+    });
+    return;
+  }
+
+  // TEST CREDENTIALS SECURITY API
   if (method === 'POST' && pathname === '/api/test-credentials') {
     readJsonBody((err, body) => {
       const { project_id, apk_id, username_or_email, password, role, advanced_config } = body;
@@ -303,11 +209,10 @@ const server = http.createServer((req, res) => {
         return res.sendJson(400, null, 'Username or email is required for test credentials');
       }
 
-      // AES-256 Encrypt password at rest
       const encrypted_password = password ? db.encryptPassword(password) : '';
 
       const newCred = db.insert('test_credentials', {
-        project_id: project_id || 'PRJ-101',
+        project_id: project_id || 'PRJ-DEFAULT',
         apk_id: apk_id || null,
         username_or_email,
         encrypted_password,
@@ -318,7 +223,6 @@ const server = http.createServer((req, res) => {
 
       db.logAudit('USR-ADMIN', 'SAVE_TEST_CREDENTIALS', { credId: newCred.id, username: username_or_email, role });
 
-      // Requirement #5 & #13: NEVER return password in API response payload
       res.sendJson(201, {
         id: newCred.id,
         project_id: newCred.project_id,
@@ -342,7 +246,7 @@ const server = http.createServer((req, res) => {
       try {
         apkMeta = parseApkMetadata(fileInfo.savedPath, fileInfo.originalName);
       } catch (parseErr) {
-        fs.unlinkSync(fileInfo.savedPath);
+        if (fs.existsSync(fileInfo.savedPath)) fs.unlinkSync(fileInfo.savedPath);
         return res.sendJson(422, null, 'Invalid APK binary file', [{ code: 'APK_INVALID', message: parseErr.message }]);
       }
 
@@ -386,7 +290,7 @@ const server = http.createServer((req, res) => {
       if (!apk_id) return res.sendJson(400, null, 'APK ID is required');
 
       const testRun = db.insert('test_runs', {
-        project_id: project_id || 'PRJ-101',
+        project_id: project_id || 'PRJ-DEFAULT',
         apk_id,
         credential_id: credential_id || null,
         status: 'QUEUED',
@@ -449,8 +353,8 @@ const server = http.createServer((req, res) => {
     db.update('findings', findingId, { status: 'RETEST_REQUIRED' });
 
     const retestRun = db.insert('test_runs', {
-      project_id: 'PRJ-101',
-      apk_id: 'APK-101',
+      project_id: 'PRJ-DEFAULT',
+      apk_id: finding.test_run_id ? (db.findOne('test_runs', r => r.id === finding.test_run_id)?.apk_id || 'APK-101') : 'APK-101',
       status: 'QUEUED',
       started_at: new Date().toISOString(),
       completed_at: null,
@@ -464,7 +368,7 @@ const server = http.createServer((req, res) => {
     return res.sendJson(200, { findingId, retestRunId: retestRun.id, status: 'RETEST_REQUIRED' }, 'Retest initiated successfully');
   }
 
-  // VERSION COMPARISON API
+  // DYNAMIC VERSION COMPARISON API
   if (method === 'GET' && pathname.match(/\/api\/projects\/[^/]+\/compare/)) {
     const v1Id = parsedUrl.query.v1;
     const v2Id = parsedUrl.query.v2;
@@ -472,28 +376,41 @@ const server = http.createServer((req, res) => {
     const apk1 = db.findOne('apks', a => a.id === v1Id || a.version_name === v1Id);
     const apk2 = db.findOne('apks', a => a.id === v2Id || a.version_name === v2Id);
 
-    const f1 = apk1 ? db.find('findings', f => f.test_run_id === db.findOne('test_runs', r => r.apk_id === apk1.id)?.id) : [];
-    const f2 = apk2 ? db.find('findings', f => f.test_run_id === db.findOne('test_runs', r => r.apk_id === apk2.id)?.id) : [];
+    const run1 = apk1 ? db.findOne('test_runs', r => r.apk_id === apk1.id && r.status === 'COMPLETED') : null;
+    const run2 = apk2 ? db.findOne('test_runs', r => r.apk_id === apk2.id && r.status === 'COMPLETED') : null;
 
-    const comparison = {
-      apk1: apk1 || { version_name: 'v1.0' },
-      apk2: apk2 || { version_name: 'v1.4' },
-      fixed: [ { title: 'Missing Network Timeout Configuration', severity: 'MEDIUM' } ],
-      new_issues: f2,
-      unchanged: [],
-      regressed: []
-    };
+    const f1 = run1 ? db.find('findings', f => f.test_run_id === run1.id) : [];
+    const f2 = run2 ? db.find('findings', f => f.test_run_id === run2.id) : [];
 
-    return res.sendJson(200, comparison);
+    const f1Titles = new Set(f1.map(f => f.title));
+    const f2Titles = new Set(f2.map(f => f.title));
+
+    const fixed = f1.filter(f => !f2Titles.has(f.title));
+    const newIssues = f2.filter(f => !f1Titles.has(f.title));
+    const unchanged = f2.filter(f => f1Titles.has(f.title));
+
+    return res.sendJson(200, {
+      apk1: apk1 || (db.find('apks')[0] || { version_name: 'v1.0' }),
+      apk2: apk2 || (db.find('apks')[1] || { version_name: 'v1.4' }),
+      fixed,
+      new_issues: newIssues,
+      unchanged
+    });
   }
 
-  // REPORTS & AUDIT LOGS API
+  // REPORTS API
+  if (method === 'GET' && pathname === '/api/reports') {
+    return res.sendJson(200, db.find('reports'));
+  }
+
   if (method === 'GET' && pathname.startsWith('/api/reports/')) {
     const reportId = pathname.split('/')[3];
-    const report = db.findOne('reports', r => r.id === reportId || r.project_id === reportId);
-    return res.sendJson(200, report || db.find('reports')[0]);
+    const report = db.findOne('reports', r => r.id === reportId || r.project_id === reportId || r.apk_id === reportId);
+    const allReports = db.find('reports');
+    return res.sendJson(200, report || (allReports.length > 0 ? allReports[0] : null));
   }
 
+  // AUDIT LOGS API
   if (method === 'GET' && pathname === '/api/audit-logs') {
     return res.sendJson(200, db.find('audit_logs'));
   }
@@ -542,11 +459,9 @@ server.on('error', (err) => {
 
 startServer(PORT);
 
-// Requirement #7: Graceful Shutdown
 process.on('SIGINT', () => {
   console.log('\nStopping APK QA Platform server gracefully...');
   server.close(() => {
     process.exit(0);
   });
 });
-

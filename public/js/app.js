@@ -91,107 +91,137 @@ function renderView(viewName, params = {}) {
 }
 
 // ==========================================================================
-// 1. DASHBOARD VIEW (Requirement #1 & #17)
+// 1. DYNAMIC DASHBOARD & EMPTY STATE VIEW (Requirement #5 & #15)
 // ==========================================================================
 async function renderDashboardView(container) {
-  container.innerHTML = `
-    <!-- Top Hero Banner with + New QA Test Button -->
-    <div class="card" style="margin-bottom: 24px; background: linear-gradient(135deg, #111827 0%, #1e1b4b 100%);">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <span class="badge badge-info" style="margin-bottom: 8px;">Active Project</span>
-          <h2 style="font-size: 24px; font-weight: 700;">CareSync Mobile Suite</h2>
-          <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Latest Version: <strong>v1.4.2</strong> (Target SDK 34)</p>
-        </div>
-        <!-- Requirement #1: Prominent + New QA Test Button -->
-        <button class="btn btn-primary" onclick="switchView('wizard')" style="font-size: 15px; padding: 12px 24px; font-weight: 700;">
-          <i class="fa-solid fa-plus"></i> New QA Test
-        </button>
-      </div>
-    </div>
-
-    <!-- Summary Metrics -->
-    <div class="grid grid-cols-4" style="margin-bottom: 24px;">
-      <div class="card">
-        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Overall QA Score</span>
-        <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 8px;">
-          <h1 style="font-size: 36px; color: var(--accent-emerald);">82</h1>
-          <span style="font-size: 14px; color: var(--text-muted);">/ 100</span>
-        </div>
-        <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 82%;"></div></div>
-      </div>
-      <div class="card">
-        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total QA Tests Run</span>
-        <h1 style="font-size: 36px; color: var(--accent-cyan); margin-top: 8px;">148</h1>
-        <span style="font-size: 12px; color: var(--accent-emerald);"><i class="fa-solid fa-circle-check"></i> 142 Passed</span>
-      </div>
-      <div class="card">
-        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Critical & High Issues</span>
-        <h1 style="font-size: 36px; color: var(--accent-rose); margin-top: 8px;">2</h1>
-        <span style="font-size: 12px; color: var(--accent-rose);">Requires resolution</span>
-      </div>
-      <div class="card">
-        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Active Environment</span>
-        <h3 style="font-size: 18px; color: var(--text-main); margin-top: 12px;">Pixel 8 Container</h3>
-        <span style="font-size: 12px; color: var(--accent-cyan);">Android 15 (API 35)</span>
-      </div>
-    </div>
-
-    <!-- Recent Test Runs & Findings -->
-    <div class="grid grid-cols-2">
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title"><i class="fa-solid fa-bolt"></i> Recent QA Runs</h3>
-          <button class="btn btn-secondary btn-sm" onclick="switchView('wizard')">+ New Test</button>
-        </div>
-        <div id="dashboardRunsList"><p style="color: var(--text-muted);">Loading test runs...</p></div>
-      </div>
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title"><i class="fa-solid fa-triangle-exclamation"></i> Open Findings</h3>
-          <button class="btn btn-secondary btn-sm" onclick="switchView('findings')">View All</button>
-        </div>
-        <div id="dashboardFindingsList"><p style="color: var(--text-muted);">Loading findings...</p></div>
-      </div>
-    </div>
-  `;
+  container.innerHTML = `<div class="card"><p style="color: var(--text-muted);">Loading QA Platform Dashboard...</p></div>`;
 
   try {
     const runs = await apiClient.getTestRuns();
     const findings = await apiClient.getFindings();
 
-    document.getElementById('dashboardRunsList').innerHTML = `
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead><tr><th>Run ID</th><th>Status</th><th>Progress</th><th>Action</th></tr></thead>
-          <tbody>
-            ${runs.map(r => `
-              <tr>
-                <td><strong>${r.id}</strong></td>
-                <td><span class="badge badge-${r.status === 'COMPLETED' ? 'low' : (r.status === 'FAILED' ? 'critical' : 'high')}">${r.status}</span></td>
-                <td>${r.progress}%</td>
-                <td><button class="btn btn-secondary btn-sm" onclick="switchView('test-run', { runId: '${r.id}' })">Inspect</button></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    `;
+    // Check if database is empty (no test runs yet)
+    if (!runs || runs.length === 0) {
+      container.innerHTML = `
+        <div class="card" style="text-align: center; padding: 64px 32px; max-width: 800px; margin: 40px auto; background: var(--bg-card);">
+          <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(99, 102, 241, 0.1); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; font-size: 36px; margin-bottom: 24px;">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+          </div>
+          <h2 style="font-size: 26px; font-weight: 700; margin-bottom: 12px;">No Applications Tested Yet</h2>
+          <p style="color: var(--text-muted); font-size: 15px; max-width: 540px; margin: 0 auto 28px; line-height: 1.6;">
+            Upload your Android APK file, configure optional test credentials, and run automated static, dynamic, security, and performance analysis.
+          </p>
+          <button class="btn btn-primary" onclick="switchView('wizard')" style="font-size: 16px; padding: 14px 32px; font-weight: 700; box-shadow: 0 0 24px var(--primary-glow);">
+            <i class="fa-solid fa-plus"></i> New QA Test
+          </button>
+        </div>
+      `;
+      return;
+    }
 
-    document.getElementById('dashboardFindingsList').innerHTML = `
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead><tr><th>Severity</th><th>Title</th><th>Action</th></tr></thead>
-          <tbody>
-            ${findings.map(f => `
-              <tr>
-                <td><span class="badge badge-${f.severity.toLowerCase()}">${f.severity}</span></td>
-                <td><strong>${f.title}</strong></td>
-                <td><button class="btn btn-secondary btn-sm" onclick="switchView('finding-detail', { findingId: '${f.id}' })">Investigate</button></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
+    // Calculate real dynamic statistics from DB records
+    const totalRuns = runs.length;
+    const completedRuns = runs.filter(r => r.status === 'COMPLETED').length;
+    const totalFindings = findings.length;
+    const criticals = findings.filter(f => f.severity === 'CRITICAL').length;
+    const highs = findings.filter(f => f.severity === 'HIGH').length;
+
+    let overallScore = 100;
+    if (totalFindings > 0) {
+      overallScore = Math.max(10, 100 - (criticals * 25 + highs * 10 + (totalFindings - criticals - highs) * 3));
+    }
+
+    const latestRun = runs[0];
+
+    container.innerHTML = `
+      <!-- Top Banner with + New QA Test Button -->
+      <div class="card" style="margin-bottom: 24px; background: linear-gradient(135deg, #111827 0%, #1e1b4b 100%);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span class="badge badge-info" style="margin-bottom: 8px;">System Active</span>
+            <h2 style="font-size: 24px; font-weight: 700;">QA Platform Overview</h2>
+            <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Latest Test Run: <strong>#${latestRun.id}</strong> (${latestRun.environment || 'Android 15'})</p>
+          </div>
+          <button class="btn btn-primary" onclick="switchView('wizard')" style="font-size: 15px; padding: 12px 24px; font-weight: 700;">
+            <i class="fa-solid fa-plus"></i> New QA Test
+          </button>
+        </div>
+      </div>
+
+      <!-- Real Dynamic Metrics -->
+      <div class="grid grid-cols-4" style="margin-bottom: 24px;">
+        <div class="card">
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Overall QA Score</span>
+          <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 8px;">
+            <h1 style="font-size: 36px; color: ${overallScore >= 80 ? 'var(--accent-emerald)' : (overallScore >= 50 ? 'var(--accent-amber)' : 'var(--accent-rose)')};">${overallScore}</h1>
+            <span style="font-size: 14px; color: var(--text-muted);">/ 100</span>
+          </div>
+          <div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${overallScore}%;"></div></div>
+        </div>
+
+        <div class="card">
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total QA Runs</span>
+          <h1 style="font-size: 36px; color: var(--accent-cyan); margin-top: 8px;">${totalRuns}</h1>
+          <span style="font-size: 12px; color: var(--accent-emerald);"><i class="fa-solid fa-circle-check"></i> ${completedRuns} Completed</span>
+        </div>
+
+        <div class="card">
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Critical & High Issues</span>
+          <h1 style="font-size: 36px; color: ${criticals + highs > 0 ? 'var(--accent-rose)' : 'var(--accent-emerald)'}; margin-top: 8px;">${criticals + highs}</h1>
+          <span style="font-size: 12px; color: var(--text-muted);">${criticals} Critical, ${highs} High</span>
+        </div>
+
+        <div class="card">
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Active Environment</span>
+          <h3 style="font-size: 18px; color: var(--text-main); margin-top: 12px;">Pixel 8 Container</h3>
+          <span style="font-size: 12px; color: var(--accent-cyan);">Android 15 (API 35)</span>
+        </div>
+      </div>
+
+      <!-- Recent Test Runs & Findings Tables -->
+      <div class="grid grid-cols-2">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-bolt"></i> Recent Test Executions</h3>
+            <button class="btn btn-secondary btn-sm" onclick="switchView('wizard')">+ New Test</button>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead><tr><th>Run ID</th><th>Status</th><th>Progress</th><th>Action</th></tr></thead>
+              <tbody>
+                ${runs.map(r => `
+                  <tr>
+                    <td><strong>${r.id}</strong></td>
+                    <td><span class="badge badge-${r.status === 'COMPLETED' ? 'low' : (r.status === 'FAILED' ? 'critical' : 'high')}">${r.status}</span></td>
+                    <td>${r.progress}%</td>
+                    <td><button class="btn btn-secondary btn-sm" onclick="switchView('test-run', { runId: '${r.id}' })">Inspect</button></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fa-solid fa-triangle-exclamation"></i> Discovered Findings</h3>
+            <button class="btn btn-secondary btn-sm" onclick="switchView('findings')">View All</button>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead><tr><th>Severity</th><th>Title</th><th>Action</th></tr></thead>
+              <tbody>
+                ${findings.length > 0 ? findings.map(f => `
+                  <tr>
+                    <td><span class="badge badge-${f.severity.toLowerCase()}">${f.severity}</span></td>
+                    <td><strong>${f.title}</strong></td>
+                    <td><button class="btn btn-secondary btn-sm" onclick="switchView('finding-detail', { findingId: '${f.id}' })">Investigate</button></td>
+                  </tr>
+                `).join('') : '<tr><td colspan="3" style="color: var(--text-muted); text-align: center;">No findings recorded yet.</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     `;
   } catch (err) {
@@ -206,7 +236,6 @@ function renderWizardView(container, stepNum = 1) {
   wizardState.step = stepNum;
 
   container.innerHTML = `
-    <!-- Stepper Navigation Header -->
     <div class="wizard-stepper">
       <div class="step-item ${stepNum >= 1 ? (stepNum > 1 ? 'completed' : 'active') : ''}">
         <div class="step-number">${stepNum > 1 ? '✓' : '1'}</div>
@@ -230,7 +259,6 @@ function renderWizardView(container, stepNum = 1) {
       </div>
     </div>
 
-    <!-- Step Body Container -->
     <div id="wizardStepBody"></div>
   `;
 
@@ -243,7 +271,6 @@ function renderWizardView(container, stepNum = 1) {
   else if (stepNum === 5) renderWizardStep5(body);
 }
 
-// Step 1: APK Upload
 function renderWizardStep1(body) {
   body.innerHTML = `
     <div class="card" style="max-width: 800px; margin: 0 auto;">
@@ -261,7 +288,7 @@ function renderWizardStep1(body) {
 
       <div id="wProgressBox" style="display: none; margin-top: 24px;">
         <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
-          <span id="wFileName">CareSync_v1.4.2.apk</span>
+          <span id="wFileName">Uploaded_App.apk</span>
           <span id="wPct">0%</span>
         </div>
         <div class="progress-bar-container"><div class="progress-bar-fill" id="wBarFill"></div></div>
@@ -320,7 +347,7 @@ async function handleWizardFileUpload(file) {
   }, 80);
 
   try {
-    const uploadedApk = await apiClient.uploadApk('PRJ-101', formData);
+    const uploadedApk = await apiClient.uploadApk('PRJ-DEFAULT', formData);
     clearInterval(timer);
     document.getElementById('wPct').textContent = `100%`;
     document.getElementById('wBarFill').style.width = `100%`;
@@ -341,7 +368,6 @@ async function handleWizardFileUpload(file) {
   }
 }
 
-// Step 2: Test Account Credentials (Requirements #3 - #8)
 function renderWizardStep2(body) {
   body.innerHTML = `
     <div class="card" style="max-width: 800px; margin: 0 auto;">
@@ -349,7 +375,6 @@ function renderWizardStep2(body) {
         <h3 class="card-title"><i class="fa-solid fa-user-shield"></i> Step 2: Application Test Credentials</h3>
       </div>
 
-      <!-- Security Notice Banner -->
       <div class="security-notice-banner">
         <h4><i class="fa-solid fa-lock"></i> Application Test Credentials</h4>
         <p>Provide a test account that the QA system can use to log into your application and test authenticated features. These credentials will only be used by the automated QA environment to test your APK.</p>
@@ -368,7 +393,6 @@ function renderWizardStep2(body) {
         </div>
       </div>
 
-      <!-- Requirement #8: Account Role Selector -->
       <div class="form-group">
         <label class="form-label">Account Role</label>
         <select class="form-control" id="wCredRole">
@@ -380,7 +404,6 @@ function renderWizardStep2(body) {
         </select>
       </div>
 
-      <!-- Requirement #6: Optional Advanced Login Configuration -->
       <details style="margin-top: 16px; background: var(--bg-dark); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
         <summary style="cursor: pointer; color: var(--accent-cyan); font-size: 13px; font-weight: 600;">
           <i class="fa-solid fa-sliders"></i> Advanced Authentication Configuration (Optional)
@@ -428,7 +451,6 @@ function saveWizardStep2Data() {
   renderWizardView(document.getElementById('viewContainer'), 3);
 }
 
-// Step 3: Testing Configuration (Requirement #9)
 function renderWizardStep3(body) {
   body.innerHTML = `
     <div class="card" style="max-width: 800px; margin: 0 auto;">
@@ -492,7 +514,6 @@ function saveWizardStep3Data() {
   renderWizardView(document.getElementById('viewContainer'), 4);
 }
 
-// Step 4: Environment Selection (Requirement #10)
 function renderWizardStep4(body) {
   body.innerHTML = `
     <div class="card" style="max-width: 800px; margin: 0 auto;">
@@ -532,7 +553,6 @@ function saveWizardStep4Data() {
   renderWizardView(document.getElementById('viewContainer'), 5);
 }
 
-// Step 5: Review & Start QA Test (Requirement #11 & #12)
 function renderWizardStep5(body) {
   const activeTests = Object.keys(wizardState.tests).filter(k => wizardState.tests[k]).map(k => k.toUpperCase());
 
@@ -542,17 +562,15 @@ function renderWizardStep5(body) {
         <h3 class="card-title"><i class="fa-solid fa-clipboard-check"></i> Step 5: Review & Start QA Test</h3>
       </div>
 
-      <!-- Review Card 1: Application -->
       <div class="review-box">
         <div class="review-box-header">
           <h4>Application Information</h4>
           <button class="btn btn-secondary btn-sm" onclick="renderWizardView(document.getElementById('viewContainer'), 1)">Edit</button>
         </div>
-        <p><strong>Package Name:</strong> ${wizardState.apk ? wizardState.apk.package_name : 'com.caresync.mobile'}</p>
-        <p><strong>Version:</strong> ${wizardState.apk ? wizardState.apk.version_name : 'v1.4.2'} (Code ${wizardState.apk ? wizardState.apk.version_code : 142})</p>
+        <p><strong>Package Name:</strong> ${wizardState.apk ? wizardState.apk.package_name : 'Uploaded APK'}</p>
+        <p><strong>Version:</strong> ${wizardState.apk ? wizardState.apk.version_name : '1.0.0'} (Code ${wizardState.apk ? wizardState.apk.version_code : 1})</p>
       </div>
 
-      <!-- Review Card 2: Test Account Credentials -->
       <div class="review-box">
         <div class="review-box-header">
           <h4>Application Test Account</h4>
@@ -563,7 +581,6 @@ function renderWizardStep5(body) {
         <p><strong>Account Role:</strong> ${wizardState.credentials.role}</p>
       </div>
 
-      <!-- Review Card 3: Testing Configuration & Environment -->
       <div class="review-box">
         <div class="review-box-header">
           <h4>Testing Configuration & Environment</h4>
@@ -573,7 +590,6 @@ function renderWizardStep5(body) {
         <p><strong>Environment:</strong> ${wizardState.environment.device} / ${wizardState.environment.androidVersion}</p>
       </div>
 
-      <!-- Security Confirmation Checkbox -->
       <div class="security-notice-banner" style="margin-top: 20px;">
         <label style="display: flex; gap: 10px; cursor: pointer; align-items: flex-start;">
           <input type="checkbox" id="wSecConfirm" ${wizardState.securityConfirmed ? 'checked' : ''} style="margin-top: 3px;">
@@ -583,7 +599,6 @@ function renderWizardStep5(body) {
 
       <div style="display: flex; justify-content: space-between; margin-top: 24px;">
         <button class="btn btn-secondary" onclick="renderWizardView(document.getElementById('viewContainer'), 4)">&larr; Back</button>
-        <!-- Requirement #12: Start QA Test Button -->
         <button class="btn btn-primary" style="font-size: 16px; padding: 12px 28px; font-weight: 700;" onclick="submitStartQaTest()">
           <i class="fa-solid fa-play"></i> Start QA Test
         </button>
@@ -592,7 +607,6 @@ function renderWizardStep5(body) {
   `;
 }
 
-// Requirement #12: Submit Wizard Flow -> Save Credentials -> Create TestRun -> Redirect to Live Run
 async function submitStartQaTest() {
   const secChk = document.getElementById('wSecConfirm');
   if (secChk && !secChk.checked) {
@@ -602,12 +616,11 @@ async function submitStartQaTest() {
 
   let credId = null;
 
-  // Save Encrypted Credentials if provided
   if (wizardState.credentials.username) {
     try {
       const savedCred = await apiClient.saveTestCredentials({
-        project_id: 'PRJ-101',
-        apk_id: wizardState.apk ? wizardState.apk.id : 'APK-101',
+        project_id: 'PRJ-DEFAULT',
+        apk_id: wizardState.apk ? wizardState.apk.id : null,
         username_or_email: wizardState.credentials.username,
         password: wizardState.credentials.password,
         role: wizardState.credentials.role,
@@ -619,10 +632,9 @@ async function submitStartQaTest() {
     }
   }
 
-  // Create TestRun & Launch Worker Job
   try {
     const run = await apiClient.createTestRun({
-      project_id: 'PRJ-101',
+      project_id: 'PRJ-DEFAULT',
       apk_id: wizardState.apk ? wizardState.apk.id : 'APK-101',
       credential_id: credId,
       environment: `${wizardState.environment.device} - ${wizardState.environment.androidVersion}`,
@@ -636,7 +648,7 @@ async function submitStartQaTest() {
 }
 
 // ==========================================================================
-// 3. REAL-TIME TEST RUN EXECUTION VIEW (Requirement #9 & #23)
+// 3. REAL-TIME TEST RUN EXECUTION VIEW
 // ==========================================================================
 function renderTestRunView(container, runId) {
   container.innerHTML = `
@@ -742,6 +754,13 @@ async function renderFindingsView(container) {
 
   try {
     const list = await apiClient.getFindings();
+    if (!list || list.length === 0) {
+      document.getElementById('findingsTableBody').innerHTML = `
+        <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">No findings discovered yet. Upload an APK and run a test to generate findings.</td></tr>
+      `;
+      return;
+    }
+
     document.getElementById('findingsTableBody').innerHTML = list.map(f => `
       <tr>
         <td><span class="badge badge-${f.severity.toLowerCase()}">${f.severity}</span></td>
@@ -826,56 +845,86 @@ window.triggerRetestFinding = async function(findingId) {
 };
 
 // ==========================================================================
-// 5. VERSION COMPARISON, REPORTS & AUDIT LOGS
+// 5. DYNAMIC VERSION COMPARISON, REPORTS & AUDIT LOGS
 // ==========================================================================
 async function renderVersionCompareView(container) {
-  container.innerHTML = `
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title"><i class="fa-solid fa-code-compare"></i> APK Version Comparison Engine</h3>
-        <span class="badge badge-info">Comparing CareSync v1.0 vs v1.4</span>
-      </div>
+  container.innerHTML = `<div class="card"><p style="color: var(--text-muted);">Loading Version Comparison...</p></div>`;
 
-      <div class="grid grid-cols-2" style="margin-bottom: 24px;">
-        <div class="card" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.3);">
-          <h4 style="color: var(--accent-emerald);"><i class="fa-solid fa-check-double"></i> Fixed Issues in v1.4</h4>
-          <ul style="margin-top: 12px; font-size: 13px; color: var(--text-muted); padding-left: 20px;">
-            <li>Missing Network Timeout Configuration (Resolved in v1.4)</li>
-          </ul>
+  try {
+    const comp = await apiClient.compareVersions('PRJ-DEFAULT', 'v1.0', 'v1.4');
+
+    container.innerHTML = `
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title"><i class="fa-solid fa-code-compare"></i> APK Version Comparison Engine</h3>
+          <span class="badge badge-info">Comparing ${comp.apk1 ? comp.apk1.version_name : 'v1.0'} vs ${comp.apk2 ? comp.apk2.version_name : 'v1.4'}</span>
         </div>
-        <div class="card" style="background: rgba(244, 63, 94, 0.05); border-color: rgba(244, 63, 94, 0.3);">
-          <h4 style="color: var(--accent-rose);"><i class="fa-solid fa-bug"></i> New / Regressed Issues in v1.4</h4>
-          <ul style="margin-top: 12px; font-size: 13px; color: var(--text-muted); padding-left: 20px;">
-            <li>Authentication API HTTP 500 Error</li>
-            <li>NullPointerException Crash on Rapid Rotation</li>
-          </ul>
+
+        <div class="grid grid-cols-2" style="margin-bottom: 24px;">
+          <div class="card" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.3);">
+            <h4 style="color: var(--accent-emerald);"><i class="fa-solid fa-check-double"></i> Fixed Issues (${comp.fixed ? comp.fixed.length : 0})</h4>
+            <ul style="margin-top: 12px; font-size: 13px; color: var(--text-muted); padding-left: 20px;">
+              ${comp.fixed && comp.fixed.length > 0 ? comp.fixed.map(f => `<li>${f.title}</li>`).join('') : '<li>No fixed issues found in comparison diff.</li>'}
+            </ul>
+          </div>
+          <div class="card" style="background: rgba(244, 63, 94, 0.05); border-color: rgba(244, 63, 94, 0.3);">
+            <h4 style="color: var(--accent-rose);"><i class="fa-solid fa-bug"></i> New / Unchanged Issues (${(comp.new_issues ? comp.new_issues.length : 0) + (comp.unchanged ? comp.unchanged.length : 0)})</h4>
+            <ul style="margin-top: 12px; font-size: 13px; color: var(--text-muted); padding-left: 20px;">
+              ${comp.new_issues && comp.new_issues.length > 0 ? comp.new_issues.map(f => `<li>${f.title}</li>`).join('') : ''}
+              ${comp.unchanged && comp.unchanged.length > 0 ? comp.unchanged.map(f => `<li>${f.title} (Unchanged)</li>`).join('') : ''}
+              ${(!comp.new_issues || comp.new_issues.length === 0) && (!comp.unchanged || comp.unchanged.length === 0) ? '<li>No issues detected.</li>' : ''}
+            </ul>
+          </div>
         </div>
       </div>
-    </div>
-  `;
+    `;
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 async function renderReportsView(container) {
-  container.innerHTML = `
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title"><i class="fa-solid fa-file-contract"></i> QA Executive Summary Report</h3>
-        <button class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Export / Print Report</button>
-      </div>
+  container.innerHTML = `<div class="card"><p style="color: var(--text-muted);">Loading QA Benchmark Report...</p></div>`;
 
-      <div style="padding: 16px; background: var(--bg-dark); border-radius: var(--radius-md);">
-        <h3>CareSync Mobile - QA Benchmark Report</h3>
-        <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Target Package: com.caresync.mobile | Version: 1.4.2</p>
-        <hr style="border-color: var(--border-color); margin: 16px 0;">
-        <div style="font-size: 14px; line-height: 1.8;">
-          <p><strong>Overall QA Score:</strong> <span style="color: var(--accent-emerald); font-weight: 700;">82 / 100</span></p>
-          <p><strong>Total Scanned Requirements:</strong> 148 Tests</p>
-          <p><strong>Discovered Critical Findings:</strong> 1 (NullPointerException Crash)</p>
-          <p><strong>Discovered High Findings:</strong> 1 (Auth HTTP 500 Error)</p>
+  try {
+    const report = await apiClient.getReport('latest');
+    if (!report) {
+      container.innerHTML = `
+        <div class="card" style="text-align: center; padding: 48px;">
+          <h3>No Reports Generated Yet</h3>
+          <p style="color: var(--text-muted); margin-top: 8px;">Run a QA test to synthesize executive benchmark reports.</p>
+          <button class="btn btn-primary" onclick="switchView('wizard')" style="margin-top: 16px;">+ New QA Test</button>
+        </div>
+      `;
+      return;
+    }
+
+    let summary = {};
+    try { summary = typeof report.summary_json === 'string' ? JSON.parse(report.summary_json) : report.summary_json; } catch(e) {}
+
+    container.innerHTML = `
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title"><i class="fa-solid fa-file-contract"></i> QA Executive Summary Report</h3>
+          <button class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Export / Print Report</button>
+        </div>
+
+        <div style="padding: 24px; background: var(--bg-dark); border-radius: var(--radius-md);">
+          <h3>QA Benchmark Executive Report</h3>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Target Package: <strong>${summary.package_name || 'com.qa.app'}</strong> | Generated: ${new Date(report.created_at).toLocaleString()}</p>
+          <hr style="border-color: var(--border-color); margin: 16px 0;">
+          <div style="font-size: 14px; line-height: 1.8;">
+            <p><strong>Overall QA Score:</strong> <span style="color: var(--accent-emerald); font-weight: 700;">${report.qa_score || summary.qaScore || 100} / 100</span></p>
+            <p><strong>Total Discovered Findings:</strong> ${summary.total_findings || 0}</p>
+            <p><strong>Critical Severity Findings:</strong> ${summary.critical || 0}</p>
+            <p><strong>High Severity Findings:</strong> ${summary.high || 0}</p>
+          </div>
         </div>
       </div>
-    </div>
-  `;
+    `;
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 async function renderAuditLogsView(container) {
